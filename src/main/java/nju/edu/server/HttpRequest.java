@@ -8,9 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by lujxu on 2017/12/8.
@@ -50,12 +48,16 @@ public class HttpRequest {
     private HttpRequest constructRequest() throws IOException {
         BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream));
         String requestLine=reader.readLine();
-        String [] params=requestLine.split(HttpUtils.SP+"");
-        splitLine(requestLine);
-        HttpMethod method=HttpMethod.valueOf(params[0].toUpperCase());
-        HttpVersion version=HttpVersion.valueOf(params[2].toUpperCase());
-        if(!isValidMethod(method,version)){
-            //TODO 505
+        List<String> params=splitLine(requestLine);
+        if (params.size()>=3) {
+            HttpMethod method = HttpMethod.valueOf(params.get(0).toUpperCase());
+            HttpVersion version = HttpVersion.valueOf("HTTP/1.0");
+//            HttpVersion version = HttpVersion.valueOf(params.get(2).toUpperCase());
+            if (!isValidMethod(method, version)) {
+                //TODO 505
+            }
+        }else{
+            //TODO 不合法的request
         }
         return null;
     }
@@ -77,10 +79,23 @@ public class HttpRequest {
         return true;
     }
 
-    private String[] splitLine(String line){
-        Map<String, Object> headers=new HashMap<>();
-        HttpUtils.splitAndAddHeader(line,headers);
-        return  null;
+    /**
+     * 将字符串按sp（空格）切分
+     * @param line
+     * @return
+     */
+    private List<String> splitLine(String line){
+        List<String> list=new ArrayList<>();
+        final int length = line.length();
+        int start = HttpUtils.findNonWhitespace(line, 0);
+        int end = HttpUtils.findWhitespace(line, start);
+        while (start<end) {
+            String temp = line.substring(start, end);
+            list.add(temp);
+            start=HttpUtils.findNonWhitespace(line, end);
+            end=HttpUtils.findWhitespace(line,start);
+        }
+        return  list;
     }
 
     public String getQueryString() {
