@@ -3,6 +3,8 @@ package nju.edu.server;
 import nju.edu.HttpMethod;
 import nju.edu.HttpVersion;
 
+import java.util.Properties;
+
 /**
  * Created by lujxu on 2017/12/8.
  */
@@ -12,6 +14,10 @@ public class HttpRequest {
     private HttpMethod method;
     private  String uri;
     private HttpVersion version;
+    /**
+     * 首部行
+     */
+    private Properties header;
 
     public HttpRequest(HttpMethod method, String url, HttpVersion version) {
         this.method = method;
@@ -24,5 +30,25 @@ public class HttpRequest {
             uri = url;
             queryString = null;
         }
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public HttpMethod getMethod() {
+        return method;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public HttpVersion getVersion() {
+        return version;
+    }
+
+    public Properties getHeader() {
+        return header;
     }
 }

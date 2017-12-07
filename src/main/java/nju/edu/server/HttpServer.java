@@ -1,7 +1,9 @@
 package nju.edu.server;
 
+import nju.edu.HttpMethod;
 import nju.edu.HttpStatus;
 import nju.edu.HttpUtils;
+import nju.edu.HttpVersion;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -40,15 +42,43 @@ public class HttpServer implements Runnable {
         try {
             InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
             BufferedReader fromClient = new BufferedReader(inputStreamReader);
-            String requestMessageLine = fromClient.readLine();
+            HttpRequest request=constructRequest(fromClient);
             DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
             outputStream.write(HttpStatus.OK.getInitialLineBytes());
             outputStream.write(HttpUtils.CR);
             outputStream.write(HttpUtils.LF);
-            System.out.println(requestMessageLine);
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    //TODO throw IOException?
+    private HttpRequest constructRequest(BufferedReader reader) throws IOException {
+        String requestLine=reader.readLine();
+        String [] params=requestLine.split(HttpUtils.SP+"");
+        HttpMethod method=HttpMethod.valueOf(params[0]);
+        HttpVersion version=HttpVersion.valueOf(params[2]);
+        if(!isValidMethod(method,version)){
+            //TODO 505
+        }
+        return null;
+    }
+
+    /**
+     * 验证http method是否合法，http 1.0仅允许get, post和head
+     * @param method
+     * @param version
+     * @return
+     */
+    private boolean isValidMethod(HttpMethod method, HttpVersion version){
+        if (version.equals(HttpVersion.HTTP_1_0)){
+            if (method.equals(HttpMethod.GET)||method.equals(HttpMethod.POST)||method.equals(HttpMethod.HEAD)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        return true;
     }
 }
