@@ -1,5 +1,6 @@
 package nju.edu.server;
 
+import nju.edu.HttpMethod;
 import nju.edu.HttpStatus;
 import nju.edu.HttpUtils;
 
@@ -20,10 +21,31 @@ public class HttpResponse {
 
     public boolean response(){
 
+        boolean isSuccess = false;
+
         if(parseURI()){
             //根据请求类型进行操作
+            try {
+                HttpMethod method = request.getMethod();
+                switch(method){
+                    case GET: isSuccess = doGet(); break;
+                    case POST: isSuccess = doPost(); break;
+                    case HEAD: isSuccess = doHead(); break;
+                    case PUT: isSuccess = doPut(); break;
+                    default:
+                        //请求出现错误? 服务器返回400 Bad Request
+                        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+                        outputStream.write(HttpStatus.BAD_REQUEST.getInitialLineBytes());
+                        outputStream.write(HttpUtils.CR);
+                        outputStream.write(HttpUtils.LF);
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+
         }else{
-            //服务器返回404 Not Found
+            //资源不存在，服务器返回404 Not Found
             try {
                 DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                 outputStream.write(HttpStatus.NOT_FOUND.getInitialLineBytes());
@@ -36,7 +58,7 @@ public class HttpResponse {
             }
         }
 
-        return false;
+        return isSuccess;
     }
 
     private boolean doGet() throws IOException{
@@ -65,13 +87,16 @@ public class HttpResponse {
         return false;
     }
 
+    //只请求页面的首部
     private boolean doHead(){
+
         return false;
     }
 
     private boolean parseURI(){
         StringBuffer sb = new StringBuffer(root);
-        String resourceName = "";
+        //??????????????????????????????????????????
+        String resourceName = request.getUri();
         sb.append("\\"+resourceName);
         localURI = sb.toString();
 

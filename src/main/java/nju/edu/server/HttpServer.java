@@ -43,11 +43,21 @@ public class HttpServer implements Runnable {
             InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
             BufferedReader fromClient = new BufferedReader(inputStreamReader);
             HttpRequest request=constructRequest(fromClient);
-            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-            outputStream.write(HttpStatus.OK.getInitialLineBytes());
-            outputStream.write(HttpUtils.CR);
-            outputStream.write(HttpUtils.LF);
-            socket.close();
+
+            HttpResponse response = new HttpResponse(socket, request);
+
+//            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+//            outputStream.write(HttpStatus.OK.getInitialLineBytes());
+//            outputStream.write(HttpUtils.CR);
+//            outputStream.write(HttpUtils.LF);
+
+            //是否响应完成
+            if(response.response()){
+                socket.close();
+            }else{
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
