@@ -1,3 +1,5 @@
+package nju.edu;
+
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -9,7 +11,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.Character.isWhitespace;
@@ -32,6 +33,7 @@ class DateFormatter extends ThreadLocal<SimpleDateFormat> {
 }
 
 public class HttpUtils {
+    public  static  final  int port=8000;
 
     public static final Charset ASCII = Charset.forName("US-ASCII");
     public static final Charset UTF_8 = Charset.forName("utf8");
@@ -456,10 +458,10 @@ public class HttpUtils {
           headers.put("Server", "http-kit");
         }
         if (!headers.containsKey("Date")) {
-          headers.put("Date", DateFormatter.getDate()); // rfc says the Date is needed
+          headers.put("Date", nju.edu.DateFormatter.getDate()); // rfc says the Date is needed
         }
         DynamicBytes bytes = new DynamicBytes(196);
-        byte[] bs = HttpStatus.valueOf(status).getInitialLineBytes();
+        byte[] bs = nju.edu.HttpStatus.valueOf(status).getInitialLineBytes();
         bytes.append(bs, bs.length);
         headers.encodeHeaders(bytes);
         ByteBuffer headBuffer = ByteBuffer.wrap(bytes.get(), 0, bytes.length());
