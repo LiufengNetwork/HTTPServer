@@ -40,9 +40,7 @@ public class HttpServer implements Runnable {
 
     public void run() {
         try {
-            InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-            BufferedReader fromClient = new BufferedReader(inputStreamReader);
-            HttpRequest request=constructRequest(fromClient);
+            HttpRequest request=new HttpRequest(socket.getInputStream());
 
             HttpResponse response = new HttpResponse(socket, request);
 
@@ -63,32 +61,5 @@ public class HttpServer implements Runnable {
         }
     }
 
-    //TODO throw IOException?
-    private HttpRequest constructRequest(BufferedReader reader) throws IOException {
-        String requestLine=reader.readLine();
-        String [] params=requestLine.split(HttpUtils.SP+"");
-        HttpMethod method=HttpMethod.valueOf(params[0]);
-        HttpVersion version=HttpVersion.valueOf(params[2]);
-        if(!isValidMethod(method,version)){
-            //TODO 505
-        }
-        return null;
-    }
 
-    /**
-     * 验证http method是否合法，http 1.0仅允许get, post和head
-     * @param method
-     * @param version
-     * @return
-     */
-    private boolean isValidMethod(HttpMethod method, HttpVersion version){
-        if (version.equals(HttpVersion.HTTP_1_0)){
-            if (method.equals(HttpMethod.GET)||method.equals(HttpMethod.POST)||method.equals(HttpMethod.HEAD)){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        return true;
-    }
 }
