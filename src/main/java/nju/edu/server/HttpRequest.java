@@ -55,6 +55,7 @@ public class HttpRequest {
             splitUrl(params.get(1));
         }else{
             //TODO 不合法的request
+            return;
         }
         //解析头部行 header line
         constructHeader(reader);
@@ -89,6 +90,8 @@ public class HttpRequest {
      */
     private List<String> splitLine(String line){
         List<String> list=new ArrayList<>();
+        if(line==null||line.isEmpty())
+            return list;
         final int length = line.length();
         int start = HttpUtils.findNonWhitespace(line, 0);
         int end = HttpUtils.findWhitespace(line, start);
@@ -119,7 +122,7 @@ public class HttpRequest {
      */
     private void constructHeader(BufferedReader reader) throws IOException {
         String temp="" ;
-        while ((temp=reader.readLine())!=null){
+        while (reader!=null&&(temp=reader.readLine())!=null){
             if (temp.length()<2||(temp.length()>=2&&temp.charAt(0)==CR&&temp.charAt(1)==LF)){
                 break;
             }
@@ -157,5 +160,9 @@ public class HttpRequest {
 
     public Properties getHeader() {
         return header;
+    }
+
+    public String getBody(){
+        return body;
     }
 }
