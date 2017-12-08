@@ -10,6 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+import static  nju.edu.HttpUtils.LF;  //\n
+import static  nju.edu.HttpUtils.CR; //\r
+
 /**
  * Created by lujxu on 2017/12/8.
  */
@@ -23,43 +26,43 @@ public class HttpRequest {
      * 首部行
      */
     private Properties header;
+    private String body;
 
     private InputStream inputStream;
 
     public HttpRequest(InputStream inputStream) throws IOException {
         this.inputStream=inputStream;
+        this.header=new Properties();
         this.constructRequest();
     }
 
-    public HttpRequest(HttpMethod method, String url, HttpVersion version) {
-        this.method = method;
-        this.version = version;
-        int idx = url.indexOf('?');
-        if (idx > 0) {
-            uri = url.substring(0, idx);
-            queryString = url.substring(idx + 1);
-        } else {
-            uri = url;
-            queryString = null;
-        }
-    }
-
     //TODO throw IOException?
-    private HttpRequest constructRequest() throws IOException {
+    private void constructRequest() throws IOException {
         BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream));
+        //解析请求行 request line
         String requestLine=reader.readLine();
         List<String> params=splitLine(requestLine);
         if (params.size()>=3) {
-            HttpMethod method = HttpMethod.valueOf(params.get(0).toUpperCase());
-            HttpVersion version = HttpVersion.valueOf("HTTP/1.0");
-//            HttpVersion version = HttpVersion.valueOf(params.get(2).toUpperCase());
-            if (!isValidMethod(method, version)) {
+            this.method = HttpMethod.valueOf(params.get(0).toUpperCase());
+            this.version = HttpVersion.HTTP_1_0;
+            String versionStr=params.get(2).toUpperCase();
+            if (versionStr.equals(HttpVersion.HTTP_1_1.toString())){
+                this.version=HttpVersion.HTTP_1_1;
+            }
+            if (!isValidMethod(this.method, this.version)) {
                 //TODO 505
             }
+            splitUrl(params.get(1));
         }else{
             //TODO 不合法的request
         }
-        return null;
+        //解析头部行 header line
+        constructHeader(reader);
+        //构造entity body
+        if (HttpUtils.hasBody(this.method)){
+            constructEntityBody(reader);
+        }
+        System.out.println(this.body);
     }
 
     /**
@@ -96,6 +99,44 @@ public class HttpRequest {
             end=HttpUtils.findWhitespace(line,start);
         }
         return  list;
+    }
+
+    private  void splitUrl(String url){
+        int idx = url.indexOf('?');
+        if (idx > 0) {
+            this.uri = url.substring(0, idx);
+            this.queryString = url.substring(idx + 1);
+        } else {
+            this.uri = url;
+            this.queryString = null;
+        }
+    }
+
+    /**
+     * construct header
+     * @param reader
+     * @throws IOException
+     */
+    private void constructHeader(BufferedReader reader) throws IOException {
+        String temp="" ;
+        while ((temp=reader.readLine())!=null){
+            if (temp.length()<2||(temp.length()>=2&&temp.charAt(0)==CR&&temp.charAt(1)==LF)){
+                break;
+            }
+            List<String> list=splitLine(temp);
+            if (list.size()>=2){
+                this.header.put(HttpUtils.camelCase(list.get(0)),list.get(1));
+            }
+        }
+    }
+
+    private void constructEntityBody(BufferedReader reader) throws IOException {
+        String temp="" ;
+        StringBuffer buffer=new StringBuffer();
+        while ((temp=reader.readLine())!=null){
+            buffer.append(temp.trim());
+        }
+       this.body=new String(buffer);
     }
 
     public String getQueryString() {

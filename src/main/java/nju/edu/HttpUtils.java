@@ -1,5 +1,6 @@
 package nju.edu;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -33,6 +34,7 @@ class DateFormatter extends ThreadLocal<SimpleDateFormat> {
 }
 
 public class HttpUtils {
+
     public  static  final  int port=8000;
 
     public static final Charset ASCII = Charset.forName("US-ASCII");
@@ -87,6 +89,25 @@ public class HttpUtils {
 
     public static final String CONTINUE = "100-continue";
 
+    /**
+     * judge if current HTTP method has entity body
+     * @param method
+     * @return
+     */
+    public static boolean hasBody(HttpMethod method){
+        switch (method){
+            case GET:
+                return false;
+            case HEAD:
+                return false;
+            case POST:
+                return true;
+            case PUT:
+                return true;
+            default:
+                return true;
+        }
+    }
 
     /*public static ByteBuffer bodyBuffer(Object body) throws IOException {
         if (body == null) {
