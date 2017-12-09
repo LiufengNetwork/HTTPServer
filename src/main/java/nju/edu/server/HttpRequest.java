@@ -63,7 +63,6 @@ public class HttpRequest {
         if (HttpUtils.hasBody(this.method)){
             constructEntityBody(reader);
         }
-        System.out.println(this.body);
     }
 
     /**
