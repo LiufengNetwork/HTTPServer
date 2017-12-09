@@ -55,10 +55,7 @@ public class HttpResponse {
 
         //判断资源是否存在
         if(parseURI()){
-            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-            outputStream.write(HttpStatus.OK.getInitialLineBytes());
-            outputStream.write(HttpUtils.CR);
-            outputStream.write(HttpUtils.LF);
+            setResponseHead(HttpStatus.OK);
 
             InputStream input = new BufferedInputStream(new FileInputStream(localURI));
             //静态网页,将本地文件作为消息体传送
@@ -108,18 +105,13 @@ public class HttpResponse {
         if(_action.equals("AddChange") || _action == null){
             String _ulcr = p.getProperty("_ulcr").trim();
 
-            //若资源存在，则返回资源内容
+            //若资源存在
             if(parseURI()){
                 setResponseHead(HttpStatus.OK);
 
-                InputStream input = new BufferedInputStream(new FileInputStream(localURI));
-                //静态网页,将本地文件作为消息体传送
-                byte[] data = new byte[1024];
-                int length = -1;
-                while((length = input.read(data)) != -1){
-                    outputStream.write(data);
-                    outputStream.flush();
-                }
+                String res = "资源文件已存在！";
+                outputStream.write(res.getBytes());
+                outputStream.flush();
 
                 return true;
             }
