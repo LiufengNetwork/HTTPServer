@@ -47,15 +47,15 @@ public class HttpUtils {
 
     public static final byte LF = 10; // \n
 
-    // public static final int ABORT_PROCESSING = -1;
+     public static final int ABORT_PROCESSING = -1;
 
-    // public static final String USER_AGENT = "user-agent";
+     public static final String USER_AGENT = "user-agent";
 
-    // public static final String ACCEPT = "Accept";
+     public static final String ACCEPT = "Accept";
 
-    // public static final String ETAG = "ETag";
+     public static final String ETAG = "ETag";
 
-    // public static final String ACCEPT_ENCODING = "accept-encoding";
+     public static final String ACCEPT_ENCODING = "accept-encoding";
 
     public static final String TRANSFER_ENCODING = "transfer-encoding";
 
@@ -67,11 +67,11 @@ public class HttpUtils {
 
     public static final String CONNECTION = "connection";
 
-    // public static final String LOCATION = "location";
+     public static final String LOCATION = "location";
 
      public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
-    // public static final String IF_NONE_MATCH = "If-None-Match";
+     public static final String IF_NONE_MATCH = "If-None-Match";
 
      public static final String LAST_MODIFIED = "Last-Modified";
 
@@ -79,7 +79,7 @@ public class HttpUtils {
 
     public static final String CONTENT_LENGTH = "content-length";
 
-    // public static final String CACHE_CONTROL = "Cache-Control";
+     public static final String CACHE_CONTROL = "Cache-Control";
 
     // space ' '
     public static final byte SP = 32;

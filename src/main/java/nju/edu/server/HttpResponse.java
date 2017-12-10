@@ -21,29 +21,37 @@ public class HttpResponse {
     private HttpRequest request;
     private DataOutputStream outputStream;
 
-    public HttpResponse(Socket socket, HttpRequest request){
+    public HttpResponse(Socket socket, HttpRequest request) {
         this.socket = socket;
         this.request = request;
     }
 
-    public boolean response(){
+    public boolean response() {
 
         boolean isSuccess;
 
         //根据请求类型进行操作
         try {
             HttpMethod method = request.getMethod();
-            switch(method){
-                case GET: isSuccess = doGet(); break;
-                case POST: isSuccess = doPost(); break;
-                case HEAD: isSuccess = doHead(); break;
-                case PUT: isSuccess = doPut(); break;
+            switch (method) {
+                case GET:
+                    isSuccess = doGet();
+                    break;
+                case POST:
+                    isSuccess = doPost();
+                    break;
+                case HEAD:
+                    isSuccess = doHead();
+                    break;
+                case PUT:
+                    isSuccess = doPut();
+                    break;
                 default:
                     //请求出现错误? 服务器返回400 Bad Request
                     setResponseHead(HttpStatus.BAD_REQUEST);
                     isSuccess = true;
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
             try {
                 setResponseHead(HttpStatus.INTERNAL_SERVER_ERROR);
             } catch (IOException e1) {
@@ -60,12 +68,12 @@ public class HttpResponse {
     /*
         处理get请求，返回资源的内容
      */
-    private boolean doGet() throws IOException{
+    private boolean doGet() throws IOException {
 
         boolean isSuccess = false;
 
         //判断资源是否存在
-        if(parseURI()){
+        if (parseURI()) {
             if (isModified()) {
                 //资源被修改，重新读取资源
                 setResponseHead(HttpStatus.OK);
@@ -75,7 +83,7 @@ public class HttpResponse {
                 InputStream input = new BufferedInputStream(new FileInputStream(localURI));
                 //静态网页,将本地文件作为消息体传送
                 byte[] data = new byte[1024];
-                while(input.read(data) != -1){
+                while (input.read(data) != -1) {
                     outputStream.write(data);
                     outputStream.flush();
                 }
@@ -87,14 +95,14 @@ public class HttpResponse {
 
             isSuccess = true;
 
-        }else{
+        } else {
             //资源不存在，服务器返回404 Not Found
             setResponseHead(HttpStatus.NOT_FOUND);
             writeEnd();
             InputStream input = new BufferedInputStream(new FileInputStream(root + "/404/404.htm"));
             //静态网页,将本地文件作为消息体传送
             byte[] data = new byte[1024];
-            while(input.read(data) != -1){
+            while (input.read(data) != -1) {
                 outputStream.write(data);
                 outputStream.flush();
             }
@@ -107,6 +115,7 @@ public class HttpResponse {
 
     /**
      * check the resource is whether modified
+     *
      * @return
      */
     private boolean isModified() {
@@ -123,7 +132,7 @@ public class HttpResponse {
     /*
         设置response的首部
      */
-    private void setResponseHead(HttpStatus httpStatus) throws IOException{
+    private void setResponseHead(HttpStatus httpStatus) throws IOException {
         outputStream = new DataOutputStream(socket.getOutputStream());
         outputStream.write(httpStatus.getInitialLineBytes());
     }
@@ -164,6 +173,7 @@ public class HttpResponse {
 
     /**
      * write head end "\r\n"
+     *
      * @throws IOException
      */
     private void writeEnd() throws IOException {
@@ -177,7 +187,7 @@ public class HttpResponse {
         2.如果查询参数 _ulcr 的值指定为 0，返回资源内容
         处理post请求，更新资源
      */
-    private boolean doPost() throws IOException{
+    private boolean doPost() throws IOException {
         boolean isSuccess = false;
 
         //Change 为更新资源，AddChange 为创建资源
@@ -185,11 +195,11 @@ public class HttpResponse {
         String _action = p.getProperty("_action").trim();
 
         //如果_action值为AddChange，或者未设置，则默认为创建资源
-        if(_action.equals("AddChange") || _action == null){
+        if (_action.equals("AddChange") || _action == null) {
             String _ulcr = p.getProperty("_ulcr").trim();
 
             //若资源存在
-            if(parseURI()){
+            if (parseURI()) {
                 setResponseHead(HttpStatus.OK);
                 writeEnd();
 
@@ -204,7 +214,7 @@ public class HttpResponse {
             createResource();
 
             //返回资源内容
-            if(Integer.parseInt(_ulcr) == 0){
+            if (Integer.parseInt(_ulcr) == 0) {
                 setResponseHead(HttpStatus.OK);
                 writeEnd();
 
@@ -212,17 +222,17 @@ public class HttpResponse {
                 //静态网页,将本地文件作为消息体传送
                 byte[] data = new byte[1024];
                 int length = -1;
-                while((length = input.read(data)) != -1){
+                while ((length = input.read(data)) != -1) {
                     outputStream.write(data);
                     outputStream.flush();
                 }
 
                 isSuccess = true;
-            }else{//返回资源链接
+            } else {//返回资源链接
                 outputStream = new DataOutputStream(socket.getOutputStream());
                 outputStream.write(HttpStatus.CREATED.getInitialLineBytes());
 
-                String Location = "Location: "+request.getUri()+"\r\n";
+                String Location = "Location: " + request.getUri() + "\r\n";
                 outputStream.write(Location.getBytes());
 
                 outputStream.write(CR);
@@ -235,7 +245,7 @@ public class HttpResponse {
         return isSuccess;
     }
 
-    private void createResource() throws IOException{
+    private void createResource() throws IOException {
         String body = request.getBody();
 
         File f = new File(localURI);
@@ -247,20 +257,20 @@ public class HttpResponse {
 
     }
 
-    private boolean doPut() throws IOException{
+    private boolean doPut() throws IOException {
         return doPost();
     }
 
     /*
         处理head请求，只返回响应头部
      */
-    private boolean doHead() throws IOException{
+    private boolean doHead() throws IOException {
 
         boolean isSuccess = false;
 
-        if(parseURI()){
+        if (parseURI()) {
             setResponseHead(HttpStatus.OK);
-        }else{
+        } else {
             setResponseHead(HttpStatus.NOT_FOUND);
         }
         writeEnd();
@@ -268,21 +278,21 @@ public class HttpResponse {
         return true;
     }
 
-    private boolean parseURI(){
+    private boolean parseURI() {
         StringBuffer sb = new StringBuffer(root);
         //resourceName应该为请求资源的相对路径
         String resourceName = request.getUri();
 
-        resourceName = resourceName.replace("/","\\");
+        resourceName = resourceName.replace("/", "\\");
 
         sb.append(resourceName);
         localURI = sb.toString();
 
         //判断资源是否存在
         File f = new File(localURI);
-        if(f.exists() && f.isFile()){
+        if (f.exists() && f.isFile()) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }

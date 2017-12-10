@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
-import static  nju.edu.HttpUtils.LF;  //\n
-import static  nju.edu.HttpUtils.CR; //\r
+import static nju.edu.HttpUtils.LF;  //\n
+import static nju.edu.HttpUtils.CR; //\r
 
 /**
  * Created by lujxu on 2017/12/8.
@@ -20,7 +20,7 @@ public class HttpRequest {
     //url "？"后的参数
     private String queryString;
     private HttpMethod method;
-    private  String uri;
+    private String uri;
     private HttpVersion version;
     /**
      * 首部行
@@ -31,51 +31,52 @@ public class HttpRequest {
     private InputStream inputStream;
 
     public HttpRequest(InputStream inputStream) throws IOException {
-        this.inputStream=inputStream;
-        this.header=new Properties();
+        this.inputStream = inputStream;
+        this.header = new Properties();
         this.constructRequest();
     }
 
     //TODO throw IOException?
     private void constructRequest() throws IOException {
-        BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         //解析请求行 request line
-        String requestLine=reader.readLine();
-        List<String> params=splitLine(requestLine);
-        if (params.size()>=3) {
+        String requestLine = reader.readLine();
+        List<String> params = splitLine(requestLine);
+        if (params.size() >= 3) {
             this.method = HttpMethod.valueOf(params.get(0).toUpperCase());
             this.version = HttpVersion.HTTP_1_0;
-            String versionStr=params.get(2).toUpperCase();
-            if (versionStr.equals(HttpVersion.HTTP_1_1.toString())){
-                this.version=HttpVersion.HTTP_1_1;
+            String versionStr = params.get(2).toUpperCase();
+            if (versionStr.equals(HttpVersion.HTTP_1_1.toString())) {
+                this.version = HttpVersion.HTTP_1_1;
             }
             if (!isValidMethod(this.method, this.version)) {
                 //TODO 505
             }
             splitUrl(params.get(1));
-        }else{
+        } else {
             //TODO 不合法的request
             return;
         }
         //解析头部行 header line
         constructHeader(reader);
         //构造entity body
-        if (HttpUtils.hasBody(this.method)){
+        if (HttpUtils.hasBody(this.method)) {
             constructEntityBody(reader);
         }
     }
 
     /**
      * 验证http method是否合法，http 1.0仅允许get, post和head
+     *
      * @param method
      * @param version
      * @return
      */
-    private boolean isValidMethod(HttpMethod method, HttpVersion version){
-        if (version.equals(HttpVersion.HTTP_1_0)){
-            if (method.equals(HttpMethod.GET)||method.equals(HttpMethod.POST)||method.equals(HttpMethod.HEAD)){
+    private boolean isValidMethod(HttpMethod method, HttpVersion version) {
+        if (version.equals(HttpVersion.HTTP_1_0)) {
+            if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.POST) || method.equals(HttpMethod.HEAD)) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -84,41 +85,43 @@ public class HttpRequest {
 
     /**
      * 将字符串按sp（空格）切分
+     *
      * @param line
      * @return
      */
-    private List<String> splitLine(String line){
-        List<String> list=new ArrayList<>();
-        if(line==null||line.isEmpty())
+    private List<String> splitLine(String line) {
+        List<String> list = new ArrayList<>();
+        if (line == null || line.isEmpty())
             return list;
         final int length = line.length();
         int start = HttpUtils.findNonWhitespace(line, 0);
         int end = HttpUtils.findWhitespace(line, start);
-        while (start<end) {
+        while (start < end) {
             String temp = line.substring(start, end);
             list.add(temp);
-            start=HttpUtils.findNonWhitespace(line, end);
-            end=HttpUtils.findWhitespace(line,start);
+            start = HttpUtils.findNonWhitespace(line, end);
+            end = HttpUtils.findWhitespace(line, start);
         }
-        return  list;
+        return list;
     }
 
     /**
      * 将字符串按colon（冒号）切分
+     *
      * @param line
      * @return
      */
-    private List<String> splitHeaderLine(String line){
-        List<String> list=new ArrayList<>();
-        if(line==null||line.isEmpty())
+    private List<String> splitHeaderLine(String line) {
+        List<String> list = new ArrayList<>();
+        if (line == null || line.isEmpty())
             return list;
         int index = HttpUtils.findColonIndex(line, 0);
         list.add(line.substring(0, index).trim());
         list.add(line.substring(index + 1, line.length()).trim());
-        return  list;
+        return list;
     }
 
-    private  void splitUrl(String url){
+    private void splitUrl(String url) {
         int idx = url.indexOf('?');
         if (idx > 0) {
             this.uri = url.substring(0, idx);
@@ -131,6 +134,7 @@ public class HttpRequest {
 
     /**
      * construct header
+     *
      * @param reader
      * @throws IOException
      */
@@ -148,12 +152,12 @@ public class HttpRequest {
     }
 
     private void constructEntityBody(BufferedReader reader) throws IOException {
-        String temp="" ;
-        StringBuffer buffer=new StringBuffer();
-        while ((temp=reader.readLine())!=null){
+        String temp = "";
+        StringBuffer buffer = new StringBuffer();
+        while ((temp = reader.readLine()) != null) {
             buffer.append(temp.trim());
         }
-       this.body=new String(buffer);
+        this.body = new String(buffer);
     }
 
     public String getQueryString() {
@@ -176,7 +180,7 @@ public class HttpRequest {
         return header;
     }
 
-    public String getBody(){
+    public String getBody() {
         return body;
     }
 }

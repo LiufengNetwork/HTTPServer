@@ -27,7 +27,7 @@ public class HttpServer implements Runnable {
         while (true) {
             socket = s.accept();
             System.out.println("connection is published, port=" + socket.getPort());
-            HttpServer server=new HttpServer(socket);
+            HttpServer server = new HttpServer(socket);
             server.start();
         }
 
@@ -40,7 +40,7 @@ public class HttpServer implements Runnable {
 
     public void run() {
         try {
-            HttpRequest request=new HttpRequest(socket.getInputStream());
+            HttpRequest request = new HttpRequest(socket.getInputStream());
 
             HttpResponse response = new HttpResponse(socket, request);
 
@@ -50,9 +50,9 @@ public class HttpServer implements Runnable {
 //            outputStream.write(HttpUtils.LF);
 
             //是否响应完成
-            if(response.response()){
+            if (response.response()) {
                 socket.close();
-            }else{
+            } else {
 
             }
 
