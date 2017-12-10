@@ -44,8 +44,14 @@ public class HttpResponse {
                     isSuccess = true;
             }
         }catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            try {
+                setResponseHead(HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } finally {
+                return false;
+            }
+
         }
 
         return isSuccess;
