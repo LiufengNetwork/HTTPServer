@@ -1,6 +1,5 @@
 package nju.edu;
 
-import javax.annotation.Resource;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -35,7 +34,7 @@ class DateFormatter extends ThreadLocal<SimpleDateFormat> {
 
 public class HttpUtils {
 
-    public  static  final  int port=8000;
+    public  static  final  int port=8080;
 
     public static final Charset ASCII = Charset.forName("US-ASCII");
     public static final Charset UTF_8 = Charset.forName("utf8");
@@ -70,11 +69,11 @@ public class HttpUtils {
 
     // public static final String LOCATION = "location";
 
-    // public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+     public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
     // public static final String IF_NONE_MATCH = "If-None-Match";
 
-    // public static final String LAST_MODIFIED = "Last-Modified";
+     public static final String LAST_MODIFIED = "Last-Modified";
 
     public static final String X_FORWARDED_FOR = "x-forwarded-for";
 
@@ -207,6 +206,16 @@ public class HttpUtils {
         int result;
         for (result = offset; result < sb.length(); result++) {
             if (isWhitespace(sb.charAt(result))) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static int findColonIndex(String sb, int offset) {
+        int result;
+        for (result = offset; result < sb.length(); result++) {
+            if (sb.charAt(result) == COLON) {
                 break;
             }
         }

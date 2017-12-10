@@ -2,15 +2,20 @@ package nju.edu.server;
 
 import nju.edu.HttpMethod;
 import nju.edu.HttpStatus;
-import nju.edu.HttpUtils;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
+
+import static nju.edu.HttpUtils.*;
 
 public class HttpResponse {
 
-    private String root = "F:\\HTTPServerResources";//服务器根目录
+    private String root = "D:\\Resource";//服务器根目录
     private String localURI = null;//资源绝对地址
     private Socket socket;
     private HttpRequest request;
@@ -55,15 +60,23 @@ public class HttpResponse {
 
         //判断资源是否存在
         if(parseURI()){
-            setResponseHead(HttpStatus.OK);
-
-            InputStream input = new BufferedInputStream(new FileInputStream(localURI));
-            //静态网页,将本地文件作为消息体传送
-            byte[] data = new byte[1024];
-            int length = -1;
-            while((length = input.read(data)) != -1){
-                outputStream.write(data);
-                outputStream.flush();
+            if (isModified()) {
+                //资源被修改，重新读取资源
+                setResponseHead(HttpStatus.OK);
+                File file = new File(localURI);
+                writeLastModified(Instant.ofEpochMilli(file.lastModified()));
+                writeEnd();
+                InputStream input = new BufferedInputStream(new FileInputStream(localURI));
+                //静态网页,将本地文件作为消息体传送
+                byte[] data = new byte[1024];
+                while(input.read(data) != -1){
+                    outputStream.write(data);
+                    outputStream.flush();
+                }
+                input.close();
+            } else {
+                //资源未修改，返回304
+                setResponseHead(HttpStatus.NOT_MODIFIED);
             }
 
             isSuccess = true;
@@ -71,11 +84,34 @@ public class HttpResponse {
         }else{
             //资源不存在，服务器返回404 Not Found
             setResponseHead(HttpStatus.NOT_FOUND);
-
+            writeEnd();
+            InputStream input = new BufferedInputStream(new FileInputStream(root + "/404/404.htm"));
+            //静态网页,将本地文件作为消息体传送
+            byte[] data = new byte[1024];
+            while(input.read(data) != -1){
+                outputStream.write(data);
+                outputStream.flush();
+            }
             isSuccess = true;
         }
 
+        outputStream.close();
         return isSuccess;
+    }
+
+    /**
+     * check the resource is whether modified
+     * @return
+     */
+    private boolean isModified() {
+        Properties headers = request.getHeader();
+        String modifySince = headers.getProperty(IF_MODIFIED_SINCE);
+        File file = new File(localURI);
+
+        if (modifySince != null && modifySince.equals(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("GMT"))))) {
+            return false;
+        }
+        return true;
     }
 
     /*
@@ -84,8 +120,49 @@ public class HttpResponse {
     private void setResponseHead(HttpStatus httpStatus) throws IOException{
         outputStream = new DataOutputStream(socket.getOutputStream());
         outputStream.write(httpStatus.getInitialLineBytes());
-        outputStream.write(HttpUtils.CR);
-        outputStream.write(HttpUtils.LF);
+    }
+
+    /**
+     * Writes out the "Last-modified" header entry to the response output stream, appending "\r\n".
+     * <p>
+     * The date is formatted using {@code DateTimeFormatter.RFC_1123_DATE_TIME}.
+     *
+     * @param instant the last-modified header entry value
+     * @throws IOException indicating an error occurred while writing out to the output stream
+     */
+    public void writeLastModified(Instant instant) throws IOException {
+        writeHeader(LAST_MODIFIED, instant == null ? "Never" :
+                DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(instant, ZoneId.of("GMT"))));
+    }
+
+    /**
+     * Writes out a header entry to the response output stream, appending "\r\n".
+     *
+     * @param key   the header entry key
+     * @param value the header entry value
+     * @throws IOException indicating an error occurred while writing out to the output stream
+     */
+    public void writeHeader(String key, String value) throws IOException {
+        writeHeader(key + ":" + value);
+    }
+
+    /**
+     * Writes out a header entry to the response output stream, appending "\r\n".
+     *
+     * @param header the header entry
+     * @throws IOException indicating an error occurred while writing out to the output stream
+     */
+    public void writeHeader(String header) throws IOException {
+        outputStream.write((header + "\r\n").getBytes(ASCII));
+    }
+
+    /**
+     * write head end "\r\n"
+     * @throws IOException
+     */
+    private void writeEnd() throws IOException {
+        outputStream.write(CR);
+        outputStream.write(LF);
     }
 
     /*
@@ -108,6 +185,7 @@ public class HttpResponse {
             //若资源存在
             if(parseURI()){
                 setResponseHead(HttpStatus.OK);
+                writeEnd();
 
                 String res = "资源文件已存在！";
                 outputStream.write(res.getBytes());
@@ -122,6 +200,7 @@ public class HttpResponse {
             //返回资源内容
             if(Integer.parseInt(_ulcr) == 0){
                 setResponseHead(HttpStatus.OK);
+                writeEnd();
 
                 InputStream input = new BufferedInputStream(new FileInputStream(localURI));
                 //静态网页,将本地文件作为消息体传送
@@ -140,8 +219,8 @@ public class HttpResponse {
                 String Location = "Location: "+request.getUri()+"\r\n";
                 outputStream.write(Location.getBytes());
 
-                outputStream.write(HttpUtils.CR);
-                outputStream.write(HttpUtils.LF);
+                outputStream.write(CR);
+                outputStream.write(LF);
 
                 isSuccess = true;
             }
@@ -178,13 +257,14 @@ public class HttpResponse {
         }else{
             setResponseHead(HttpStatus.NOT_FOUND);
         }
+        writeEnd();
 
         return true;
     }
 
     private boolean parseURI(){
         StringBuffer sb = new StringBuffer(root);
-        //?????????????resourceName应该为请求资源的相对路径
+        //resourceName应该为请求资源的相对路径
         String resourceName = request.getUri();
 
         resourceName = resourceName.replace("/","\\");

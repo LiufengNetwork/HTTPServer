@@ -103,6 +103,21 @@ public class HttpRequest {
         return  list;
     }
 
+    /**
+     * 将字符串按colon（冒号）切分
+     * @param line
+     * @return
+     */
+    private List<String> splitHeaderLine(String line){
+        List<String> list=new ArrayList<>();
+        if(line==null||line.isEmpty())
+            return list;
+        int index = HttpUtils.findColonIndex(line, 0);
+        list.add(line.substring(0, index).trim());
+        list.add(line.substring(index + 1, line.length()).trim());
+        return  list;
+    }
+
     private  void splitUrl(String url){
         int idx = url.indexOf('?');
         if (idx > 0) {
@@ -120,14 +135,14 @@ public class HttpRequest {
      * @throws IOException
      */
     private void constructHeader(BufferedReader reader) throws IOException {
-        String temp="" ;
-        while (reader!=null&&(temp=reader.readLine())!=null){
-            if (temp.length()<2||(temp.length()>=2&&temp.charAt(0)==CR&&temp.charAt(1)==LF)){
+        String temp = "";
+        while (reader != null && (temp = reader.readLine()) != null) {
+            if (temp.length() < 2 || (temp.length() >= 2 && temp.charAt(0) == CR && temp.charAt(1) == LF)) {
                 break;
             }
-            List<String> list=splitLine(temp);
-            if (list.size()>=2){
-                this.header.put(HttpUtils.camelCase(list.get(0)),list.get(1));
+            List<String> list = splitHeaderLine(temp);
+            if (list.size() >= 2) {
+                this.header.put(HttpUtils.camelCase(list.get(0)), list.get(1));
             }
         }
     }
