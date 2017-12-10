@@ -20,7 +20,7 @@ import static java.net.InetAddress.getByName;
 class DateFormatter extends ThreadLocal<SimpleDateFormat> {
     protected SimpleDateFormat initialValue() {
         // Formats into HTTP date format (RFC 822/1123).
-        SimpleDateFormat f = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+        SimpleDateFormat f = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.CHINESE);
         f.setTimeZone(TimeZone.getTimeZone("GMT"));
         return f;
     }
