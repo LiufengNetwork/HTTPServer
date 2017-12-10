@@ -1,6 +1,7 @@
 package nju.edu.server.impl;
 
 import nju.edu.HttpMethod;
+import nju.edu.server.MalformedRequestException;
 import nju.edu.utils.HttpUtils;
 import nju.edu.HttpVersion;
 import nju.edu.server.HttpRequest;
@@ -27,18 +28,18 @@ public class HttpRequestImpl implements HttpRequest {
      * 首部行
      */
     private Properties header;
-    private String body;
+    private BufferedReader body;
 
     private InputStream inputStream;
 
-    public HttpRequestImpl(InputStream inputStream) throws IOException {
+    public HttpRequestImpl(InputStream inputStream) throws IOException, MalformedRequestException {
         this.inputStream = inputStream;
         this.header = new Properties();
         this.constructRequest();
     }
 
     //TODO throw IOException?
-    public void constructRequest() throws IOException {
+    public void constructRequest() throws IOException, MalformedRequestException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         //解析请求行 request line
         String requestLine = reader.readLine();
@@ -55,8 +56,9 @@ public class HttpRequestImpl implements HttpRequest {
             }
             splitUrl(params.get(1));
         } else {
-            //TODO 不合法的request
+            //不合法的request
             return;
+//            throw new MalformedRequestException("bad request");
         }
         //解析头部行 header line
         constructHeader(reader);
@@ -153,12 +155,7 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     private void constructEntityBody(BufferedReader reader) throws IOException {
-        String temp = "";
-        StringBuffer buffer = new StringBuffer();
-        while ((temp = reader.readLine()) != null) {
-            buffer.append(temp.trim());
-        }
-        this.body = new String(buffer);
+        this.body = reader;
     }
 
     public String getQueryString() {
@@ -181,7 +178,7 @@ public class HttpRequestImpl implements HttpRequest {
         return header;
     }
 
-    public String getBody() {
+    public BufferedReader getBody() {
         return body;
     }
 }

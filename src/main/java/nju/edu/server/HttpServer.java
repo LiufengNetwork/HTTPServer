@@ -43,17 +43,21 @@ public class HttpServer implements Runnable {
             HttpRequest request= new HttpRequestImpl(socket.getInputStream()) ;
 
             //日志功能通过代理实现，不涉及业务功能，可以不用点进去看，
-            HttpResponse response = LogInvoHandler.getProxyInstance(new HttpResponseImpl(socket, request)) ;
+            HttpResponse response = LogInvoHandler.getProxyInstance(new HttpResponseImpl(socket, request, new HttpWriter(socket))) ;
 
             //是否响应完成
             if (response.response()) {
                 socket.close();
-            } else {
-
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (MalformedRequestException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 

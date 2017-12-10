@@ -34,6 +34,10 @@ public class LogInvoHandler implements InvocationHandler {
     }
 
     private void afterHandle() {
-        LogUtils.writeLog(((HttpResponseImpl) target).fromLog());
+        String log = ((HttpResponseImpl) target).fromLog();
+
+        if (log != null && !log.equals("")) {
+            LogUtils.writeLog(log);
+        }
     }
 }

@@ -10,7 +10,7 @@ import java.util.Date;
  * Created by SuperSY on 2017/12/10.
  */
 public class LogUtils {
-    public static String logPath = HttpUtils.rootPath + "/log/access.log";
+    public static String logPath = System.getProperty("user.dir") + "/src/main/resource" + "/log/access.log";
     static FileWriter logWriter;
 
     public static void writeLog(String content) {

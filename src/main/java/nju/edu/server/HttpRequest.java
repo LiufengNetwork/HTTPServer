@@ -3,6 +3,7 @@ package nju.edu.server;
 import nju.edu.HttpMethod;
 import nju.edu.HttpVersion;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public interface HttpRequest {
     public HttpMethod getMethod() ;
     public Properties getHeader() ;
     public String getUri() ;
-    public String getBody() ;
+    public BufferedReader getBody() ;
     public String getQueryString() ;
     public HttpVersion getVersion() ;
 }
