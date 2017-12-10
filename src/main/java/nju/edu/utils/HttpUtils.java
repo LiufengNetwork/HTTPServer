@@ -19,7 +19,7 @@ import static java.net.InetAddress.getByName;
 
 
 public class HttpUtils {
-    public static final String rootPath = "F:\\Server" ;
+    public static final String rootPath = System.getProperty("user.dir" + "/src/main/resource") ;
     public  static  final  int port=8080;
 
     public static final Charset ASCII = Charset.forName("US-ASCII");

@@ -7,20 +7,24 @@ import java.lang.reflect.*;
 /**
  * Created by SuperSY on 2017/12/10.
  */
-public class LogInvoHandler implements InvocationHandler{
-    private Object target ; //Ä¿±ê
-    private LogInvoHandler(){}
+public class LogInvoHandler implements InvocationHandler {
+    private Object target; //ç›®æ ‡
+
+    private LogInvoHandler() {
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Object result = method.invoke(target,args) ;
+        Object result = method.invoke(target, args);
 
-        //´¦ÀíÍêresponse£¬Ìí¼ÓÈÕÖ¾¼ÇÂ¼
+        //å¤„ç†å®Œresponseï¼Œæ·»åŠ æ—¥å¿—è®°å½•
         afterHandle();
 
-        return result ;
+        return result;
     }
-    public static<T> T getProxyInstance(T target){
-        LogInvoHandler invoHandler = new LogInvoHandler() ;
+
+    public static <T> T getProxyInstance(T target) {
+        LogInvoHandler invoHandler = new LogInvoHandler();
         invoHandler.setTarget(target);
         return (T) Proxy.newProxyInstance(invoHandler.getClass().getClassLoader(), target.getClass().getInterfaces(), invoHandler);
     }
@@ -28,7 +32,8 @@ public class LogInvoHandler implements InvocationHandler{
     public void setTarget(Object target) {
         this.target = target;
     }
-    private void afterHandle(){
-        LogUtils.writeLog(((HttpResponseImpl)target).fromLog());
+
+    private void afterHandle() {
+        LogUtils.writeLog(((HttpResponseImpl) target).fromLog());
     }
 }

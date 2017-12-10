@@ -19,7 +19,7 @@ import static nju.edu.utils.HttpUtils.*;
 
 public class HttpResponseImpl implements HttpResponse {
 
-    private String root = HttpUtils.rootPath;//服务器根目录
+    private String root;//服务器根目录
     private String localURI = null;//资源绝对地址
     private Socket socket;
     private HttpRequest request;
@@ -29,6 +29,7 @@ public class HttpResponseImpl implements HttpResponse {
     public HttpResponseImpl(Socket socket, HttpRequest request) {
         this.socket = socket;
         this.request = request;
+        this.root = System.getProperty("user.dir") + "/src/main/resource";
     }
 
     public boolean response() {
@@ -290,7 +291,7 @@ public class HttpResponseImpl implements HttpResponse {
         //resourceName应该为请求资源的相对路径
         String resourceName = request.getUri();
 
-        resourceName = resourceName.replace("/", "\\");
+//        resourceName = resourceName.replace("/", "\\");
 
         sb.append(resourceName);
         localURI = sb.toString();
