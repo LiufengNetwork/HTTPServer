@@ -15,7 +15,7 @@ import static nju.edu.HttpUtils.*;
 
 public class HttpResponse {
 
-    private String root = "D:\\Resource";//服务器根目录
+    private String root = "F:\\Server";//服务器根目录
     private String localURI = null;//资源绝对地址
     private Socket socket;
     private HttpRequest request;
@@ -99,17 +99,18 @@ public class HttpResponse {
             //资源不存在，服务器返回404 Not Found
             setResponseHead(HttpStatus.NOT_FOUND);
             writeEnd();
-            InputStream input = new BufferedInputStream(new FileInputStream(root + "/404/404.htm"));
+            /*InputStream input = new BufferedInputStream(new FileInputStream(root + "/404/404.htm"));
             //静态网页,将本地文件作为消息体传送
             byte[] data = new byte[1024];
             while (input.read(data) != -1) {
                 outputStream.write(data);
                 outputStream.flush();
-            }
+            }*/
+            showNotFoundPage();
             isSuccess = true;
         }
 
-        outputStream.close();
+        this.outputStream.close();
         return isSuccess;
     }
 
@@ -295,6 +296,16 @@ public class HttpResponse {
         } else {
             return false;
         }
+    }
+
+    /**
+     * 返回404 not found 页面
+     */
+    private void showNotFoundPage() throws IOException {
+       String path=root+"/404/index.html";
+        File file=new File(path);
+        byte[] data = readContent(file,new Long(file.length()).intValue());
+        this.outputStream.write(data);
     }
 
 }
