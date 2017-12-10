@@ -1,4 +1,6 @@
-package nju.edu;
+package nju.edu.utils;
+
+import nju.edu.HttpMethod;
 
 import java.io.*;
 import java.net.*;
@@ -6,34 +8,18 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import static java.lang.Character.isWhitespace;
 import static java.net.InetAddress.getByName;
 
-//  SimpleDateFormat is not thread safe
-class DateFormatter extends ThreadLocal<SimpleDateFormat> {
-    protected SimpleDateFormat initialValue() {
-        // Formats into HTTP date format (RFC 822/1123).
-        SimpleDateFormat f = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.CHINESE);
-        f.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return f;
-    }
 
-    private static final DateFormatter FORMATTER = new DateFormatter();
 
-    public static String getDate() {
-        return FORMATTER.get().format(new Date());
-    }
-}
 
 public class HttpUtils {
-
+    public static final String rootPath = "F:\\Server" ;
     public  static  final  int port=8080;
 
     public static final Charset ASCII = Charset.forName("US-ASCII");
@@ -47,15 +33,15 @@ public class HttpUtils {
 
     public static final byte LF = 10; // \n
 
-     public static final int ABORT_PROCESSING = -1;
+    public static final int ABORT_PROCESSING = -1;
 
-     public static final String USER_AGENT = "user-agent";
+    public static final String USER_AGENT = "user-agent";
 
-     public static final String ACCEPT = "Accept";
+    public static final String ACCEPT = "Accept";
 
-     public static final String ETAG = "ETag";
+    public static final String ETAG = "ETag";
 
-     public static final String ACCEPT_ENCODING = "accept-encoding";
+    public static final String ACCEPT_ENCODING = "accept-encoding";
 
     public static final String TRANSFER_ENCODING = "transfer-encoding";
 
@@ -67,19 +53,19 @@ public class HttpUtils {
 
     public static final String CONNECTION = "connection";
 
-     public static final String LOCATION = "location";
+    public static final String LOCATION = "location";
 
-     public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+    public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
-     public static final String IF_NONE_MATCH = "If-None-Match";
+    public static final String IF_NONE_MATCH = "If-None-Match";
 
-     public static final String LAST_MODIFIED = "Last-Modified";
+    public static final String LAST_MODIFIED = "Last-Modified";
 
     public static final String X_FORWARDED_FOR = "x-forwarded-for";
 
     public static final String CONTENT_LENGTH = "content-length";
 
-     public static final String CACHE_CONTROL = "Cache-Control";
+    public static final String CACHE_CONTROL = "Cache-Control";
 
     // space ' '
     public static final byte SP = 32;

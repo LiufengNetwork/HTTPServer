@@ -1,5 +1,7 @@
 package nju.edu;
 
+import nju.edu.utils.HttpUtils;
+
 public class HttpStatus {
 
     private final int code;

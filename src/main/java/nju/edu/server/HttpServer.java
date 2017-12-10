@@ -2,8 +2,11 @@ package nju.edu.server;
 
 import nju.edu.HttpMethod;
 import nju.edu.HttpStatus;
-import nju.edu.HttpUtils;
+import nju.edu.server.impl.HttpRequestImpl;
+import nju.edu.server.impl.HttpResponseImpl;
+import nju.edu.utils.HttpUtils;
 import nju.edu.HttpVersion;
+import nju.edu.utils.LogInvoHandler;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -40,9 +43,10 @@ public class HttpServer implements Runnable {
 
     public void run() {
         try {
-            HttpRequest request = new HttpRequest(socket.getInputStream());
+            HttpRequest request= new HttpRequestImpl(socket.getInputStream()) ;
 
-            HttpResponse response = new HttpResponse(socket, request);
+            //日志功能通过代理实现，不涉及业务功能，可以不用点进去看，
+            HttpResponse response = LogInvoHandler.getProxyInstance(new HttpResponseImpl(socket, request)) ;
 
 //            DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
 //            outputStream.write(HttpStatus.OK.getInitialLineBytes());
