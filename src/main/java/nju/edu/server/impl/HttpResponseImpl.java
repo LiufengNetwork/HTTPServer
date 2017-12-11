@@ -144,36 +144,31 @@ public class HttpResponseImpl implements HttpResponse {
 
         //Change 为更新资源，AddChange 为创建资源
         Properties p = request.getHeader();
-        String _action = p.getProperty("_action").trim();
+        String _action = p.getProperty("_action");
 
         //如果_action值为AddChange，或者未设置，则默认为创建资源
-        if (_action.equals("AddChange") || _action == null) {
-            String _ulcr = p.getProperty("_ulcr").trim();
+        if (_action == null || _action.equals("AddChange")) {
+            String _ulcr = p.getProperty("_ulcr");
 
             //若资源存在
             if (parseURI()) {
                 httpWriter.setResponseHeader(HttpStatus.OK);
                 httpWriter.endHeader();
 
-                String res = "资源文件已存在！";
-                httpWriter.writeBody(res.getBytes());
+                String res = "resource exist!";
+                httpWriter.writeBody(res.getBytes(UTF_8));
 
                 return true;
             }
 
             //若资源不存在，则创建资源
-            createResource();
+            byte[] result = createResource();
 
             //返回资源内容
             if (Integer.parseInt(_ulcr) == 0) {
                 httpWriter.setResponseHeader(HttpStatus.OK);
                 httpWriter.endHeader();
-
-                BufferedReader reader = request.getBody();
-                String tmp;
-                while ((tmp = reader.readLine()) != null) {
-                    httpWriter.writeBody(tmp.getBytes());
-                }
+                httpWriter.writeBody(result);
 
                 isSuccess = true;
             } else {//返回资源链接
@@ -192,15 +187,28 @@ public class HttpResponseImpl implements HttpResponse {
      * create resource which post by http
      * @throws IOException
      */
-    private void createResource() throws IOException {
+    private byte[] createResource() throws IOException {
+        byte[] result = null;
+
         BufferedReader body = request.getBody();
+        Properties headers = request.getHeader();
         File f = new File(localURI);
-        OutputStream outputStream = new FileOutputStream(f);
-        String tmp;
-        while ((tmp = body.readLine()) != null) {
-            outputStream.write(tmp.getBytes());
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(f));
+        int newread = 0;
+        int totalread = 0;
+        int contentLength = Integer.parseInt(headers.getProperty(camelCase(CONTENT_LENGTH)));
+
+        char[] bytes = new char[contentLength];
+
+        while (totalread < contentLength) {
+            newread = body.read(bytes, totalread, contentLength - totalread);
+            totalread += newread;
         }
+        result = new String(bytes).getBytes(UTF_8);
+        outputStream.write(result);
         outputStream.close();
+
+        return result;
     }
 
     private boolean doPut() throws IOException {
