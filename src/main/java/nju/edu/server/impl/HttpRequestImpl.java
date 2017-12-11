@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.*;
 
 import static nju.edu.utils.HttpUtils.LF;  //\n
@@ -54,7 +55,8 @@ public class HttpRequestImpl implements HttpRequest {
             if (!isValidMethod(this.method, this.version)) {
                 //TODO 505
             }
-            splitUrl(params.get(1));
+            String url= URLDecoder.decode(params.get(1),"UTF-8");
+            splitUrl(url );
         } else {
             //不合法的request
             return;
