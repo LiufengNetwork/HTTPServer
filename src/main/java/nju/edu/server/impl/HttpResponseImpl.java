@@ -56,6 +56,9 @@ public class HttpResponseImpl implements HttpResponse {
                 case PUT:
                     isSuccess = doPut();
                     break;
+                case DELETE:
+                    isSuccess = doDelete();
+                    break;
                 default:
                     //请求出现错误? 服务器返回400 Bad Request
                     httpWriter.badRequest();
@@ -213,6 +216,20 @@ public class HttpResponseImpl implements HttpResponse {
 
     private boolean doPut() throws IOException {
         return doPost();
+    }
+
+    private boolean doDelete() throws IOException {
+        if (parseURI()) {
+            File f = new File(localURI);
+            f.delete();
+
+            httpWriter.setResponseHeader(HttpStatus.OK);
+            httpWriter.endHeader();
+        } else {
+            httpWriter.setResponseHeader(HttpStatus.INTERNAL_SERVER_ERROR);
+            httpWriter.endHeader();
+        }
+        return true;
     }
 
     /*
