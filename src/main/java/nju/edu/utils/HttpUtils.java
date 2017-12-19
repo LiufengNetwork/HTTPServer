@@ -94,79 +94,7 @@ public class HttpUtils {
         }
     }
 
-    /*public static ByteBuffer bodyBuffer(Object body) throws IOException {
-        if (body == null) {
-            return null;
-        } else if (body instanceof String) {
-            byte[] b = ((String) body).getBytes(UTF_8);
-            return ByteBuffer.wrap(b);
-        } else if (body instanceof InputStream) {
-            DynamicBytes b = readAll((InputStream) body);
-            return ByteBuffer.wrap(b.get(), 0, b.length());
-        } else if (body instanceof File) {
-            // serving file is better be done by Nginx
-            return readAll((File) body);
-        } else if (body instanceof Seqable) {
-            ISeq seq = ((Seqable) body).seq();
-            if (seq == null) {
-                return null;
-            } else {
-                DynamicBytes b = new DynamicBytes(seq.count() * 512);
-                while (seq != null) {
-                    b.append(seq.first().toString(), UTF_8);
-                    seq = seq.next();
-                }
-                return ByteBuffer.wrap(b.get(), 0, b.length());
-            }
-        // makes ultimate optimization possible: no copy
-        } else if (body instanceof ByteBuffer) {
-            return (ByteBuffer) body;
-        } else {
-            throw new RuntimeException(body.getClass() + " is not understandable");
-        }
-    }*/
-
     private static final byte[] ALPHAS = "0123456789ABCDEF".getBytes();
-
-    // like javascript's encodeURI
-    // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/encodeURI
-  /*  public static String encodeURI(String url) {
-        byte[] bytes = url.getBytes(UTF_8);
-        DynamicBytes buffer = new DynamicBytes(bytes.length * 2);
-        boolean e = true;
-        for (byte b : bytes) {
-            int c = b < 0 ? b + 256 : b;
-            if (c < '!' || c > '~') {
-                e = true;
-            } else {
-                switch (c) {
-                    case '"':
-                        // https://github.com/http-kit/http-kit/issues/70
-//                    case '%':
-                    case '<':
-                    case '>':
-                    case '\\':
-                    case '^':
-                    case '`':
-                    case '{':
-                    case '}':
-                    case '|':
-                        e = true;
-                        break;
-                    default:
-                        e = false;
-                }
-            }
-            if (e) {
-                buffer.append((byte) '%');
-                buffer.append(ALPHAS[c / 16]);
-                buffer.append(ALPHAS[c % 16]);
-            } else {
-                buffer.append(b);
-            }
-        }
-        return new String(buffer.get(), 0, buffer.length(), UTF_8);
-    }*/
 
     public static int findEndOfString(String sb, int offset) {
         int result;
@@ -240,7 +168,7 @@ public class HttpUtils {
         return sb.toString();
     }
 
-  /*  public static String getPath(URI uri) {
+  public static String getPath(URI uri) {
         String path = encodeURI(uri.getRawPath());
         String query = uri.getRawQuery();
         if ("".equals(path))
@@ -249,7 +177,45 @@ public class HttpUtils {
             return path;
         else
             return path + "?" + query;
-    }*/
+    }
+
+    public static String encodeURI(String url) {
+        byte[] bytes = url.getBytes(UTF_8);
+        DynamicBytes buffer = new DynamicBytes(bytes.length * 2);
+        boolean e = true;
+        for (byte b : bytes) {
+            int c = b < 0 ? b + 256 : b;
+            if (c < '!' || c > '~') {
+                e = true;
+            } else {
+                switch (c) {
+                    case '"':
+                        // https://github.com/http-kit/http-kit/issues/70
+//                    case '%':
+                    case '<':
+                    case '>':
+                    case '\\':
+                    case '^':
+                    case '`':
+                    case '{':
+                    case '}':
+                    case '|':
+                        e = true;
+                        break;
+                    default:
+                        e = false;
+                }
+            }
+            if (e) {
+                buffer.append((byte) '%');
+                buffer.append(ALPHAS[c / 16]);
+                buffer.append(ALPHAS[c % 16]);
+            } else {
+                buffer.append(b);
+            }
+        }
+        return new String(buffer.get(), 0, buffer.length(), UTF_8);
+    }
 
     public static int getPort(URI uri) {
         int port = uri.getPort();
@@ -317,7 +283,7 @@ public class HttpUtils {
         }
     }
 
-    /*public static DynamicBytes readAll(InputStream is) throws IOException {
+    public static DynamicBytes readAll(InputStream is) throws IOException {
         DynamicBytes bytes = new DynamicBytes(32768); // init 32k
         byte[] buffer = new byte[16384];
         int read;
@@ -326,7 +292,7 @@ public class HttpUtils {
         }
         is.close();
         return bytes;
-    }*/
+    }
 
     public static String getStringValue(Map<String, Object> headers, String key) {
         Object o = headers.get(key);
@@ -424,92 +390,5 @@ public class HttpUtils {
         return null;
     }
 
-    // unit test in utils-test.clj
-    /*public static Charset detectCharset(Map<String, Object> headers, DynamicBytes body) {
-        // 1. first from http header: Content-Type: text/html; charset=utf8
-        Charset result = parseCharset(getStringValue(headers, CONTENT_TYPE));
-        if (result == null) {
-            // 2. decode a little to find charset=???
-            String s = new String(body.get(), 0, min(512, body.length()), ASCII);
-            // content="text/html;charset=gb2312"
-            result = guess(s, CHARSET);
-            if (result == null) {
-                // for xml
-                Matcher matcher = ENCODING.matcher(s);
-                if (matcher.find()) {
-                    try {
-                        result = Charset.forName(matcher.group(2));
-                    } catch (Exception ignore) {
-                    }
-                }
-            }
-        }
-        // default utf8
-        return result == null ? UTF_8 : result;
-    }*/
-
     public static final String CL = "Content-Length";
-
-  /*  public static ByteBuffer[] HttpEncode(int status, HeaderMap headers, Object body) {
-        ByteBuffer bodyBuffer;
-        try {
-            bodyBuffer = bodyBuffer(body);
-            // only write length if not chunked
-            if (!CHUNKED.equals(headers.get("Transfer-Encoding"))) {
-                if (bodyBuffer != null) {
-                    // trust the computed length
-                    headers.putOrReplace(CL, Integer.toString(bodyBuffer.remaining()));
-                } else {
-                    headers.putOrReplace(CL, "0");
-                }
-            }
-        } catch (IOException e) {
-            byte[] b = e.getMessage().getBytes(ASCII);
-            status = 500;
-            headers.clear();
-            headers.put(CL, Integer.toString(b.length));
-            bodyBuffer = ByteBuffer.wrap(b);
-        }
-        if (!headers.containsKey("Server")) {
-          headers.put("Server", "http-kit");
-        }
-        if (!headers.containsKey("Date")) {
-          headers.put("Date", nju.edu.DateFormatter.getDate()); // rfc says the Date is needed
-        }
-        DynamicBytes bytes = new DynamicBytes(196);
-        byte[] bs = nju.edu.HttpStatus.valueOf(status).getInitialLineBytes();
-        bytes.append(bs, bs.length);
-        headers.encodeHeaders(bytes);
-        ByteBuffer headBuffer = ByteBuffer.wrap(bytes.get(), 0, bytes.length());
-
-        if (bodyBuffer != null)
-            return new ByteBuffer[]{headBuffer, bodyBuffer};
-        else
-            return new ByteBuffer[]{headBuffer};
-    }*/
-
-    public static ByteBuffer WsEncode(byte opcode, byte[] data, int length) {
-        byte b0 = 0;
-        b0 |= 1 << 7; // FIN
-        b0 |= opcode;
-        ByteBuffer buffer = ByteBuffer.allocate(length + 10); // max
-        buffer.put(b0);
-
-        if (length <= 125) {
-            buffer.put((byte) (length));
-        } else if (length <= 0xFFFF) {
-            buffer.put((byte) 126);
-            buffer.putShort((short) length);
-        } else {
-            buffer.put((byte) 127);
-            buffer.putLong(length);
-        }
-        buffer.put(data, 0, length);
-        buffer.flip();
-        return buffer;
-    }
-
-    public static ByteBuffer WsEncode(byte opcode, byte[] data) {
-        return WsEncode(opcode, data, data.length);
-    }
 }
